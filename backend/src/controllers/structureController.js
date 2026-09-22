@@ -11,6 +11,17 @@ async function getAll(req, res) {
   }
 }
 
+// GET /api/structures/stats
+async function getStats(req, res) {
+  try {
+    const stats = await structureModel.getStats();
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
+
 // GET /api/structures/:id
 async function getOne(req, res) {
   try {
@@ -61,9 +72,12 @@ async function remove(req, res) {
     await structureModel.remove(req.params.id);
     res.status(204).send();
   } catch (error) {
+    if (error.code === 'STRUCTURE_NOT_EMPTY') {
+      return res.status(409).json({ message: error.message });
+    }
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 }
 
-module.exports = { getAll, getOne, create, update, remove };
+module.exports = { getAll, getStats, getOne, create, update, remove };
