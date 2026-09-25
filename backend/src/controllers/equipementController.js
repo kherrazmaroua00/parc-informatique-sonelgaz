@@ -1,12 +1,22 @@
 const equipementModel = require('../models/equipementModel');
 
 // GET /api/equipements
+// GET /api/equipements
 async function getAll(req, res) {
   try {
-    // Role-based filtering: 'consultation' users only see their own structure
     const id_structure = req.user.role === 'consultation' ? req.user.id_structure : null;
-    const equipements = await equipementModel.getAll(id_structure);
-    res.json(equipements);
+
+    const result = await equipementModel.getAll({
+      id_structure,
+      search: req.query.search || '',
+      id_type: req.query.id_type || null,
+      etat: req.query.etat || null,
+      filter_structure: req.query.id_structure || null,
+      page: req.query.page || 1,
+      limit: req.query.limit || 10,
+    });
+
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
@@ -76,5 +86,15 @@ async function remove(req, res) {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 }
+// GET /api/equipements/stats
+async function getStats(req, res) {
+  try {
+    const stats = await equipementModel.getStats();
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
 
-module.exports = { getAll, getOne, create, update, remove };
+module.exports = { getAll, getOne, create, update, remove, getStats };

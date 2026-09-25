@@ -7,6 +7,7 @@ const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
 router.use(verifyToken);
 
 // Both roles can read
+router.get('/stats', equipementController.getStats);
 router.get('/', equipementController.getAll);
 router.get('/:code_barre', equipementController.getOne);
 
