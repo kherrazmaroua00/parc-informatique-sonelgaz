@@ -89,7 +89,8 @@ async function remove(req, res) {
 // GET /api/equipements/stats
 async function getStats(req, res) {
   try {
-    const stats = await equipementModel.getStats();
+    const id_structure = req.user.role === 'consultation' ? req.user.id_structure : null;
+    const stats = await equipementModel.getStats(id_structure);
     res.json(stats);
   } catch (error) {
     console.error(error);

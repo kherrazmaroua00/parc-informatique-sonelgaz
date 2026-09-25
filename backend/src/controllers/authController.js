@@ -11,7 +11,10 @@ async function login(req, res) {
 
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM Utilisateur WHERE login = ?',
+      `SELECT u.*, s.nom_structure
+       FROM Utilisateur u
+       LEFT JOIN Structure s ON s.id_structure = u.id_structure
+       WHERE u.login = ?`,
       [login]
     );
 
@@ -30,7 +33,8 @@ async function login(req, res) {
       {
         id_utilisateur: user.id_utilisateur,
         role: user.role,
-        id_structure: user.id_structure
+        id_structure: user.id_structure,
+        nom_structure: user.nom_structure
       },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }

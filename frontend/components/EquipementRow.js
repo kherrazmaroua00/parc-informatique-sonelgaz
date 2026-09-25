@@ -23,7 +23,7 @@ const etatLabels = {
   reforme: 'Reforme',
 };
 
-export default function EquipementRow({ equipement, onView, onEdit, onDelete, onReassign }) {
+export default function EquipementRow({ equipement, onView, onEdit, onDelete, onReassign, canEdit = true }) {
   const TypeIcon = typeIcons[equipement.nom_type] || Cpu;
 
   return (
@@ -68,23 +68,23 @@ export default function EquipementRow({ equipement, onView, onEdit, onDelete, on
           <button onClick={() => onView(equipement)} className="text-gray-400 hover:text-slate-800" title="Voir">
             <Eye size={16} strokeWidth={1.75} />
           </button>
-          <button onClick={() => onEdit(equipement)} className="text-gray-400 hover:text-slate-800" title="Modifier">
+          {canEdit && <button onClick={() => onEdit(equipement)} className="text-gray-400 hover:text-slate-800" title="Modifier">
             <SquarePen size={16} strokeWidth={1.75} />
-          </button>
-          <button onClick={() => onDelete(equipement)} className="text-gray-400 hover:text-red-600" title="Supprimer">
+          </button>}
+          {canEdit && <button onClick={() => onDelete(equipement)} className="text-gray-400 hover:text-red-600" title="Supprimer">
             <Trash2 size={16} strokeWidth={1.75} />
-          </button>
+          </button>}
         </div>
       </td>
 
       <td className="py-3 px-4 align-top">
-        <button
+        {canEdit && <button
           onClick={() => onReassign(equipement)}
           className="text-gray-400 hover:text-blue-600"
           title="Reaffecter a une autre structure"
         >
           <ArrowLeftRight size={16} strokeWidth={1.75} />
-        </button>
+        </button>}
       </td>
     </tr>
   );

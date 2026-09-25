@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   LayoutDashboard,
   Monitor,
@@ -13,6 +14,7 @@ import {
   History,
   LogOut,
 } from 'lucide-react';
+import { useStoredUser } from '@/lib/useStoredUser';
 
 const navItems = [
   { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -27,6 +29,11 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const user = useStoredUser();
+
+  const visibleItems = user?.role === 'admin'
+    ? navItems
+    : navItems.filter((item) => !['/structures', '/utilisateurs'].includes(item.href));
 
   function handleLogout() {
     localStorage.removeItem('token');
@@ -43,7 +50,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (

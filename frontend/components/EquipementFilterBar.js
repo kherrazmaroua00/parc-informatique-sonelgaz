@@ -9,13 +9,14 @@ export default function EquipementFilterBar({
   structureFilter, onStructureChange, structures,
   onReset,
   activeFilterCount,
+  showStructureFilter = true,
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
           <ListFilter size={16} strokeWidth={1.75} />
-          Filtres de recherche et criteres d'affichage
+          Filtres de recherche et criteres d&apos;affichage
         </div>
         <div className="flex items-center gap-3">
           {activeFilterCount > 0 && (
@@ -52,7 +53,7 @@ export default function EquipementFilterBar({
 
         <div>
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
-            Type d'equipement
+            Type d&apos;equipement
           </label>
           <select
             value={typeFilter}
@@ -83,7 +84,7 @@ export default function EquipementFilterBar({
           </select>
         </div>
 
-        <div>
+        {showStructureFilter && <div>
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
             Structure de rattachement
           </label>
@@ -97,7 +98,7 @@ export default function EquipementFilterBar({
               <option key={s.id_structure} value={s.id_structure}>{s.nom_structure}</option>
             ))}
           </select>
-        </div>
+        </div>}
       </div>
     </div>
   );

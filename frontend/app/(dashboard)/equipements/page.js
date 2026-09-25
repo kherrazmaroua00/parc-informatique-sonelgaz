@@ -8,8 +8,10 @@ import EquipementFilterBar from '@/components/EquipementFilterBar';
 import EquipementRow from '@/components/EquipementRow';
 import Pagination from '@/components/Pagination';
 import EquipementFormModal from '@/components/EquipementFormModal';
+import { useStoredUser } from '@/lib/useStoredUser';
 
 export default function EquipementsPage() {
+  const user = useStoredUser();
   const [equipements, setEquipements] = useState([]);
   const [stats, setStats] = useState(null);
   const [types, setTypes] = useState([]);
@@ -147,6 +149,7 @@ async function handleFormSubmit(formData) {
 
   const activeFilterCount = [search, typeFilter, etatFilter, structureFilter].filter(Boolean).length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const isAdmin = user?.role === 'admin';
 
   return (
     <main className="p-8">
@@ -163,10 +166,9 @@ async function handleFormSubmit(formData) {
             <Download size={16} strokeWidth={1.75} />
             Export CSV
           </button>
-          <button  onClick={handleAddNew} className="flex items-center gap-2 text-sm font-medium text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-            <Plus size={16} strokeWidth={1.75} />
-            Ajouter un equipement
-          </button>
+          {isAdmin && <button onClick={handleAddNew} className="flex items-center gap-2 text-sm font-medium text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <Plus size={16} strokeWidth={1.75} /> Ajouter un equipement
+          </button>}
         </div>
       </div>
 
@@ -186,7 +188,8 @@ async function handleFormSubmit(formData) {
         search={search} onSearchChange={setSearch}
         typeFilter={typeFilter} onTypeChange={setTypeFilter} types={types}
         etatFilter={etatFilter} onEtatChange={setEtatFilter}
-        structureFilter={structureFilter} onStructureChange={setStructureFilter} structures={structures}
+        structureFilter={isAdmin ? structureFilter : ''} onStructureChange={setStructureFilter} structures={isAdmin ? structures : []}
+        showStructureFilter={isAdmin}
         onReset={handleReset}
         activeFilterCount={activeFilterCount}
       />
@@ -215,6 +218,7 @@ async function handleFormSubmit(formData) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onReassign={handleReassign}
+                canEdit={isAdmin}
               />
             ))}
           </tbody>

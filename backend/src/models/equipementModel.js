@@ -153,10 +153,13 @@ async function remove(code_barre) {
   await pool.query(`DELETE FROM Equipement WHERE code_barre = ?`, [code_barre]);
 }
 // Count equipements by etat, for the stat cards
-async function getStats() {
-  const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Equipement`);
+async function getStats(id_structure = null) {
+  const params = id_structure ? [id_structure] : [];
+  const where = id_structure ? ' WHERE id_structure = ?' : '';
+  const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Equipement${where}`, params);
   const [rows] = await pool.query(
-    `SELECT etat, COUNT(*) AS count FROM Equipement GROUP BY etat`
+    `SELECT etat, COUNT(*) AS count FROM Equipement${where} GROUP BY etat`,
+    params
   );
 
   const counts = { actif: 0, en_panne: 0, defectueux: 0, reforme: 0 };

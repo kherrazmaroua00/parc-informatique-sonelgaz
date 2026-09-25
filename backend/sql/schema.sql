@@ -6,7 +6,7 @@
 CREATE TABLE Structure (
     id_structure INT AUTO_INCREMENT PRIMARY KEY,
     nom_structure VARCHAR(100) NOT NULL,
-    chef_structure VARCHAR(100)
+    chef_structure VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE TypeEquipement (
