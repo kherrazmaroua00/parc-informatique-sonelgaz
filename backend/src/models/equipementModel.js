@@ -66,30 +66,86 @@ async function getByCodeBarre(code_barre) {
      WHERE e.code_barre = ?`,
     [code_barre]
   );
-  return rows[0];
+  const equipement = rows[0];
+  if (!equipement) return null;
+
+  const [caracteristiques] = await pool.query(
+    `SELECT id_caracteristique, nom_caracteristique, valeur FROM Caracteristique WHERE code_barre = ?`,
+    [code_barre]
+  );
+  equipement.caracteristiques = caracteristiques;
+
+  return equipement;
 }
 
 // Create a new equipement
 async function create(data) {
-  const { code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure } = data;
-  await pool.query(
-    `INSERT INTO Equipement (code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat || 'actif', id_type, id_structure]
-  );
-  return getByCodeBarre(code_barre);
+  const { code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, caracteristiques } = data;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    await conn.query(
+      `INSERT INTO Equipement (code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat || 'actif', id_type, id_structure]
+    );
+
+    if (Array.isArray(caracteristiques)) {
+      for (const c of caracteristiques) {
+        if (!c.nom_caracteristique || !c.valeur) continue;
+        await conn.query(
+          `INSERT INTO Caracteristique (nom_caracteristique, valeur, code_barre) VALUES (?, ?, ?)`,
+          [c.nom_caracteristique, c.valeur, code_barre]
+        );
+      }
+    }
+
+    await conn.commit();
+    return getByCodeBarre(code_barre);
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 // Update an existing equipement
 async function update(code_barre, data) {
-  const { numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure } = data;
-  await pool.query(
-    `UPDATE Equipement
-     SET numero_serie = ?, designation = ?, marque = ?, reference = ?, annee_mise_en_service = ?, etat = ?, id_type = ?, id_structure = ?
-     WHERE code_barre = ?`,
-    [numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, code_barre]
-  );
-  return getByCodeBarre(code_barre);
+  const { numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, caracteristiques } = data;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    await conn.query(
+      `UPDATE Equipement
+       SET numero_serie = ?, designation = ?, marque = ?, reference = ?, annee_mise_en_service = ?, etat = ?, id_type = ?, id_structure = ?
+       WHERE code_barre = ?`,
+      [numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, code_barre]
+    );
+
+    if (Array.isArray(caracteristiques)) {
+      await conn.query(`DELETE FROM Caracteristique WHERE code_barre = ?`, [code_barre]);
+      for (const c of caracteristiques) {
+        if (!c.nom_caracteristique || !c.valeur) continue;
+        await conn.query(
+          `INSERT INTO Caracteristique (nom_caracteristique, valeur, code_barre) VALUES (?, ?, ?)`,
+          [c.nom_caracteristique, c.valeur, code_barre]
+        );
+      }
+    }
+
+    await conn.commit();
+    return getByCodeBarre(code_barre);
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
 
 // Delete an equipement

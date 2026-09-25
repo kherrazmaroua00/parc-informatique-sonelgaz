@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const equipementRoutes = require('./routes/equipementRoutes');
 const structureRoutes = require('./routes/structureRoutes');
 const consommableRoutes = require('./routes/consommableRoutes');
+const typeEquipementRoutes = require('./routes/typeEquipementRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipements', equipementRoutes);
 app.use('/api/structures', structureRoutes);
 app.use('/api/consommables', consommableRoutes);
+app.use('/api/types', typeEquipementRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {

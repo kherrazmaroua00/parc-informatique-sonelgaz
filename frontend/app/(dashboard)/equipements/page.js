@@ -7,6 +7,7 @@ import StatCardMini from '@/components/StatCardMini';
 import EquipementFilterBar from '@/components/EquipementFilterBar';
 import EquipementRow from '@/components/EquipementRow';
 import Pagination from '@/components/Pagination';
+import EquipementFormModal from '@/components/EquipementFormModal';
 
 export default function EquipementsPage() {
   const [equipements, setEquipements] = useState([]);
@@ -25,6 +26,9 @@ export default function EquipementsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingEquipement, setEditingEquipement] = useState(null);
 
   // Load static reference data once (types, structures)
   useEffect(() => {
@@ -85,8 +89,30 @@ export default function EquipementsPage() {
   }
 
   function handleEdit(equipement) {
-    console.log('edit', equipement);
+  setEditingEquipement(equipement);
+  setModalOpen(true);
+}
+
+function handleAddNew() {
+  setEditingEquipement(null);
+  setModalOpen(true);
+}
+
+async function handleFormSubmit(formData) {
+  if (editingEquipement) {
+    await apiFetch(`/equipements/${editingEquipement.code_barre}`, {
+      method: 'PUT',
+      body: JSON.stringify(formData),
+    });
+  } else {
+    await apiFetch('/equipements', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    });
   }
+  setModalOpen(false);
+  loadEquipements();
+}
 
   async function handleDelete(equipement) {
     if (!confirm(`Supprimer l'equipement "${equipement.code_barre}" ?`)) return;
@@ -137,7 +163,7 @@ export default function EquipementsPage() {
             <Download size={16} strokeWidth={1.75} />
             Export CSV
           </button>
-          <button className="flex items-center gap-2 text-sm font-medium text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <button  onClick={handleAddNew} className="flex items-center gap-2 text-sm font-medium text-white bg-slate-900 px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
             <Plus size={16} strokeWidth={1.75} />
             Ajouter un equipement
           </button>
@@ -207,6 +233,14 @@ export default function EquipementsPage() {
           onLimitChange={setLimit}
         />
       </div>
+      <EquipementFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleFormSubmit}
+        initialData={editingEquipement}
+        types={types}
+        structures={structures}
+      />
     </main>
   );
 }
