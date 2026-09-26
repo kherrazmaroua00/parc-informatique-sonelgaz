@@ -31,6 +31,9 @@ async function getOne(req, res) {
     }
     res.json(structure);
   } catch (error) {
+    if (error.code === 'INVALID_CHEF') {
+      return res.status(400).json({ message: error.message });
+    }
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
@@ -42,6 +45,9 @@ async function create(req, res) {
     const newStructure = await structureModel.create(req.body);
     res.status(201).json(newStructure);
   } catch (error) {
+    if (error.code === 'INVALID_CHEF') {
+      return res.status(400).json({ message: error.message });
+    }
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }

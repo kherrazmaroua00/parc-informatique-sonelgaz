@@ -40,23 +40,74 @@ async function getStats() {
   return { total_structures, total_equipements, total_chefs };
 }
 
+async function assignChef(connection, id_structure, chefUtilisateurId, previousChefName) {
+  const [[chef]] = await connection.query(
+    `SELECT id_utilisateur, nom
+     FROM Utilisateur
+     WHERE id_utilisateur = ? AND role = 'consultation'`,
+    [chefUtilisateurId]
+  );
+
+  if (!chef) {
+    const error = new Error('Le chef doit etre un utilisateur de consultation valide');
+    error.code = 'INVALID_CHEF';
+    throw error;
+  }
+
+  if (previousChefName && previousChefName !== chef.nom) {
+    await connection.query(
+      `UPDATE Utilisateur SET role = 'consultation' WHERE nom = ? AND id_structure = ? AND role = 'chef_structure'`,
+      [previousChefName, id_structure]
+    );
+  }
+
+  await connection.query(
+    `UPDATE Utilisateur SET role = 'chef_structure', id_structure = ? WHERE id_utilisateur = ?`,
+    [id_structure, chefUtilisateurId]
+  );
+}
+
 // Create a new structure
 async function create(data) {
-  const { nom_structure, typologie, site, chef_structure, poste_chef } = data;
-  const [result] = await pool.query(
-    `INSERT INTO Structure (nom_structure, typologie, site, chef_structure, poste_chef) VALUES (?, ?, ?, ?, ?)`,
-    [nom_structure, typologie, site, chef_structure, poste_chef]
-  );
+  const { nom_structure, typologie, site, chef_structure, chef_utilisateur_id, poste_chef } = data;
+  const connection = await pool.getConnection();
+  let result;
+  try {
+    await connection.beginTransaction();
+    [result] = await connection.query(
+      `INSERT INTO Structure (nom_structure, typologie, site, chef_structure, poste_chef) VALUES (?, ?, ?, ?, ?)`,
+      [nom_structure, typologie, site, chef_structure, poste_chef]
+    );
+    await assignChef(connection, result.insertId, chef_utilisateur_id, null);
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
   return getById(result.insertId);
 }
 
 // Update a structure
 async function update(id_structure, data) {
-  const { nom_structure, typologie, site, chef_structure, poste_chef } = data;
-  await pool.query(
-    `UPDATE Structure SET nom_structure = ?, typologie = ?, site = ?, chef_structure = ?, poste_chef = ? WHERE id_structure = ?`,
-    [nom_structure, typologie, site, chef_structure, poste_chef, id_structure]
-  );
+  const { nom_structure, typologie, site, chef_structure, chef_utilisateur_id, poste_chef } = data;
+  const existing = await getById(id_structure);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.query(
+      `UPDATE Structure SET nom_structure = ?, typologie = ?, site = ?, chef_structure = ?, poste_chef = ? WHERE id_structure = ?`,
+      [nom_structure, typologie, site, chef_structure, poste_chef, id_structure]
+    );
+    await assignChef(connection, id_structure, chef_utilisateur_id, existing.chef_structure);
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
   return getById(id_structure);
 }
 

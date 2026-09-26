@@ -9,6 +9,7 @@ import StructureFormModal from '@/components/StructureFormModal';
 
 export default function StructuresPage() {
   const [structures, setStructures] = useState([]);
+  const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -26,10 +27,12 @@ export default function StructuresPage() {
     Promise.all([
       apiFetch('/structures'),
       apiFetch('/structures/stats'),
+      apiFetch('/utilisateurs'),
     ])
-      .then(([structuresData, statsData]) => {
+      .then(([structuresData, statsData, usersData]) => {
         setStructures(structuresData);
         setStats(statsData);
+        setUsers(usersData);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -237,6 +240,7 @@ const filteredStructures = structures.filter((s) => {
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
         initialData={editingStructure}
+        users={users}
       />
     </main>
   );

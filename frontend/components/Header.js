@@ -58,7 +58,7 @@ export default function Header() {
           className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[11px] font-medium text-red-300 transition-colors hover:bg-red-500/20"
         >
           <LogOut size={13} strokeWidth={2} />
-          Log out
+          deconnexion
         </button>
       </div>
     </header>

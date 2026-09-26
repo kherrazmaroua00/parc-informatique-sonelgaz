@@ -77,6 +77,36 @@ export default function DemandesPage() {
     }
   }
 
+  function exportDemandes() {
+    const statusLabels = {
+      en_attente: 'En attente d\'arbitrage',
+      accordee: 'Accordee',
+      servie: 'Remise effectuee',
+      refusee: 'Refusee',
+    };
+    const headers = ['N° DPS', 'Date', 'Agent', 'Structure', 'Objet', 'Etat', 'Consommables', 'Quantites'];
+    const rows = demandes.map((demande) => [
+      `DPS-${new Date(demande.date_demande).getFullYear()}-${String(demande.id_demande).padStart(3, '0')}`,
+      new Date(demande.date_demande).toLocaleDateString('fr-FR'),
+      demande.nom_agent,
+      demande.nom_structure,
+      demande.objet,
+      statusLabels[demande.etat_demande] || demande.etat_demande,
+      demande.lignes.map((ligne) => ligne.designation).join(' | '),
+      demande.lignes.map((ligne) => ligne.quantite).join(' | '),
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `demandes_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="p-4 sm:p-8">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -85,7 +115,7 @@ export default function DemandesPage() {
           <h1 className="text-2xl font-bold text-gray-900">{isAdmin ? 'Demandes' : 'Mes demandes'}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {isAdmin && <button className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"><Download size={16} strokeWidth={1.75} />Exporter le registre (Excel)</button>}
+          {isAdmin && <button onClick={exportDemandes} disabled={demandes.length === 0} className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"><Download size={16} strokeWidth={1.75} />Exporter le registre (Excel)</button>}
           {!isAdmin && <Link href="/demandes/nouveau" className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"><Plus size={16} />Nouvelle demande</Link>}
         </div>
       </div>
