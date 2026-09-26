@@ -1,4 +1,4 @@
-import { Eye, SquarePen, Trash2, ArrowLeftRight, Cpu, Printer, BatteryCharging, Server, Network, ScanLine } from 'lucide-react';
+import { Eye, SquarePen, Trash2, Cpu, Printer, BatteryCharging, Server, Network, ScanLine } from 'lucide-react';
 
 const typeIcons = {
   PC: Cpu,
@@ -23,7 +23,7 @@ const etatLabels = {
   reforme: 'Reforme',
 };
 
-export default function EquipementRow({ equipement, onView, onEdit, onDelete, onReassign, canEdit = true }) {
+export default function EquipementRow({ equipement, onView, onEdit, onDelete, canEdit = true }) {
   const TypeIcon = typeIcons[equipement.nom_type] || Cpu;
 
   return (
@@ -77,15 +77,6 @@ export default function EquipementRow({ equipement, onView, onEdit, onDelete, on
         </div>
       </td>
 
-      <td className="py-3 px-4 align-top">
-        {canEdit && <button
-          onClick={() => onReassign(equipement)}
-          className="text-gray-400 hover:text-blue-600"
-          title="Reaffecter a une autre structure"
-        >
-          <ArrowLeftRight size={16} strokeWidth={1.75} />
-        </button>}
-      </td>
     </tr>
   );
 }

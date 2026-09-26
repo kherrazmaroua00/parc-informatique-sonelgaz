@@ -9,6 +9,7 @@ import EquipementRow from '@/components/EquipementRow';
 import Pagination from '@/components/Pagination';
 import EquipementFormModal from '@/components/EquipementFormModal';
 import { useStoredUser } from '@/lib/useStoredUser';
+import { useRouter } from 'next/navigation';
 
 export default function EquipementsPage() {
   const user = useStoredUser();
@@ -16,6 +17,7 @@ export default function EquipementsPage() {
   const [stats, setStats] = useState(null);
   const [types, setTypes] = useState([]);
   const [structures, setStructures] = useState([]);
+  const router = useRouter();
 
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -96,8 +98,7 @@ export default function EquipementsPage() {
 }
 
 function handleAddNew() {
-  setEditingEquipement(null);
-  setModalOpen(true);
+  router.push('/equipements/nouveau');
 }
 
 async function handleFormSubmit(formData) {
@@ -124,10 +125,6 @@ async function handleFormSubmit(formData) {
     } catch (err) {
       alert(err.message);
     }
-  }
-
-  function handleReassign(equipement) {
-    console.log('reassign', equipement);
   }
 
   function handleExport() {
@@ -206,7 +203,6 @@ async function handleFormSubmit(formData) {
               <th className="py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Etat</th>
               <th className="py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Mise en svc</th>
               <th className="py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Reaffectation</th>
             </tr>
           </thead>
           <tbody>
@@ -217,7 +213,6 @@ async function handleFormSubmit(formData) {
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onReassign={handleReassign}
                 canEdit={isAdmin}
               />
             ))}

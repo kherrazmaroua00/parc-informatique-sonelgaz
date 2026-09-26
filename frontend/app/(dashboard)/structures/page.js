@@ -166,8 +166,8 @@ const filteredStructures = structures.filter((s) => {
       )}
 
             <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-          <Search size={16} className="text-gray-400" strokeWidth={1.75} />
+        <div className="flex-1 flex items-center gap-2 text-black bg-white border border-gray-200 rounded-lg px-3 py-2">
+          <Search size={16} className="text-black" strokeWidth={1.75} />
           <input
             type="text"
             placeholder="Rechercher par nom de structure..."
@@ -180,7 +180,7 @@ const filteredStructures = structures.filter((s) => {
         <select
           value={typologyFilter}
           onChange={(e) => setTypologyFilter(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 outline-none"
+          className="text-sm border border-gray-200 rounded-lg px-5 py-2 bg-white text-gray-700 outline-none"
         >
           <option value="all">Toutes les typologies ({structures.length})</option>
           {uniqueTypologies.map((t) => (
@@ -190,7 +190,7 @@ const filteredStructures = structures.filter((s) => {
           ))}
         </select>
 
-        <span className="text-xs text-gray-400 whitespace-nowrap">
+        <span className="text-xs text-gray-400 whitespace-nowrap ">
           {filteredStructures.length} structure{filteredStructures.length > 1 ? 's' : ''} enregistree{filteredStructures.length > 1 ? 's' : ''}
         </span>
       </div>

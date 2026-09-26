@@ -18,7 +18,10 @@ CREATE TABLE Utilisateur (
     id_utilisateur INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     login VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NULL UNIQUE,
     mot_de_passe VARCHAR(255) NOT NULL,
+    invitation_token_hash CHAR(64) NULL,
+    invitation_expires_at DATETIME NULL,
     role ENUM('admin', 'consultation') NOT NULL,
     id_structure INT NOT NULL,
     FOREIGN KEY (id_structure) REFERENCES Structure(id_structure)

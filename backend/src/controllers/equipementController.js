@@ -98,4 +98,34 @@ async function getStats(req, res) {
   }
 }
 
-module.exports = { getAll, getOne, create, update, remove, getStats };
+// POST /api/equipements/batch/validate
+async function validateBatch(req, res) {
+  try {
+    const { rows } = req.body;
+    if (!Array.isArray(rows)) {
+      return res.status(400).json({ message: 'Le champ rows doit etre un tableau' });
+    }
+    const result = await equipementModel.validateBatch(rows);
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
+
+// POST /api/equipements/batch/import
+async function importBatch(req, res) {
+  try {
+    const { rows } = req.body;
+    if (!Array.isArray(rows)) {
+      return res.status(400).json({ message: 'Le champ rows doit etre un tableau' });
+    }
+    const result = await equipementModel.importBatch(rows);
+    res.status(201).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
+
+module.exports = { getAll, getOne, create, update, remove, getStats, validateBatch, importBatch };

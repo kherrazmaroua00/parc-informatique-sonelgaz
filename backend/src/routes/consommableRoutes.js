@@ -5,6 +5,9 @@ const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
 
 router.use(verifyToken);
 
+router.get('/stats', consommableController.getStats);
+router.post('/batch/validate', requireAdmin, consommableController.validateBatch);
+router.post('/batch/import', requireAdmin, consommableController.importBatch);
 router.get('/', consommableController.getAll);
 router.get('/:id', consommableController.getOne);
 

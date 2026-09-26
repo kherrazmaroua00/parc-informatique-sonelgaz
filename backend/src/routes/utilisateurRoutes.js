@@ -7,6 +7,7 @@ router.use(verifyToken);
 router.get('/stats', utilisateurController.getStats);
 router.get('/', utilisateurController.getAll);
 router.post('/', requireAdmin, utilisateurController.create);
+router.post('/:id/invitation', requireAdmin, utilisateurController.sendInvitation);
 router.put('/:id', requireAdmin, utilisateurController.update);
 router.delete('/:id', requireAdmin, utilisateurController.remove);
 

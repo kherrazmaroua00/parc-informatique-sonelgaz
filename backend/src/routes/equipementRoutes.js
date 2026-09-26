@@ -10,6 +10,8 @@ router.use(verifyToken);
 router.get('/stats', equipementController.getStats);
 router.get('/', equipementController.getAll);
 router.get('/:code_barre', equipementController.getOne);
+router.post('/batch/validate', requireAdmin, equipementController.validateBatch);
+router.post('/batch/import', requireAdmin, equipementController.importBatch);
 
 // Only admin can create, update, delete
 router.post('/', requireAdmin, equipementController.create);

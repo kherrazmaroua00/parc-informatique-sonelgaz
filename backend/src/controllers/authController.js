@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../config/db');
+const utilisateurModel = require('../models/utilisateurModel');
 
 async function login(req, res) {
   const { login, password } = req.body;
@@ -47,7 +49,8 @@ async function login(req, res) {
         nom: user.nom,
         login: user.login,
         role: user.role,
-        id_structure: user.id_structure
+        id_structure: user.id_structure,
+        nom_structure: user.nom_structure
       }
     });
 
@@ -57,4 +60,26 @@ async function login(req, res) {
   }
 }
 
-module.exports = { login };
+async function setPassword(req, res) {
+  const { token, password } = req.body;
+  if (!token || typeof password !== 'string' || password.length < 8) {
+    return res.status(400).json({ message: 'Lien invalide ou mot de passe trop court (8 caracteres minimum)' });
+  }
+
+  try {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await utilisateurModel.getByInvitationToken(tokenHash);
+    if (!user) return res.status(400).json({ message: 'Lien invalide ou expire. Demandez une nouvelle invitation.' });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const updated = await utilisateurModel.setPasswordWithInvitation(user.id_utilisateur, tokenHash, passwordHash);
+    if (!updated) return res.status(400).json({ message: 'Lien deja utilise ou expire. Demandez une nouvelle invitation.' });
+
+    res.json({ login: user.login });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+}
+
+module.exports = { login, setPassword };

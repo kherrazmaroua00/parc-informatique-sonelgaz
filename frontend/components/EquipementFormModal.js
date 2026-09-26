@@ -47,6 +47,9 @@ const typeFieldsConfig = {
   ],
 };
 
+const fieldLabelClass = 'mb-1.5 block text-sm font-semibold text-slate-700';
+const fieldControlClass = 'w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-sky-700 focus:ring-2 focus:ring-sky-700/20 disabled:bg-slate-100 disabled:text-slate-700';
+
 export default function EquipementFormModal({ open, onClose, onSubmit, initialData, types, structures }) {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -121,14 +124,14 @@ useEffect(() => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
           {error && (
             <p className="bg-red-50 text-red-600 text-sm p-2 rounded-lg">{error}</p>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className={fieldLabelClass}>
                 Code-barres *
               </label>
               <input
@@ -138,11 +141,11 @@ useEffect(() => {
                 required
                 disabled={isEditing}
                 placeholder="SNL-SAI-PC-0145"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800 disabled:bg-gray-100 disabled:text-gray-400"
+                className={fieldControlClass}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className={fieldLabelClass}>
                 Numero de serie
               </label>
               <input
@@ -150,13 +153,13 @@ useEffect(() => {
                 value={form.numero_serie}
                 onChange={handleChange}
                 placeholder="CZC4120N8L"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800"
+                className={fieldControlClass}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className={fieldLabelClass}>
               Designation *
             </label>
             <input
@@ -165,48 +168,48 @@ useEffect(() => {
               onChange={handleChange}
               required
               placeholder="Ordinateur HP ProDesk 400 G6 MT"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800"
+              className={fieldControlClass}
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Marque *</label>
+              <label className={fieldLabelClass}>Marque *</label>
               <input
                 name="marque"
                 value={form.marque}
                 onChange={handleChange}
                 required
                 placeholder="HP"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800"
+                className={fieldControlClass}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Reference</label>
+              <label className={fieldLabelClass}>Reference</label>
               <input
                 name="reference"
                 value={form.reference}
                 onChange={handleChange}
                 placeholder="ProDesk 400 G6"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800"
+                className={fieldControlClass}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Mise en service</label>
+              <label className={fieldLabelClass}>Mise en service</label>
               <input
                 type="number"
                 name="annee_mise_en_service"
                 value={form.annee_mise_en_service}
                 onChange={handleChange}
                 placeholder="2024"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800"
+                className={fieldControlClass}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className={fieldLabelClass}>
                 Type d'equipement *
               </label>
               <select
@@ -214,7 +217,7 @@ useEffect(() => {
                 value={form.id_type}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800 bg-white"
+                className={fieldControlClass}
               >
                 <option value="">Selectionner...</option>
                 {types.map((t) => (
@@ -223,7 +226,7 @@ useEffect(() => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className={fieldLabelClass}>
                 Structure d'affectation *
               </label>
               <select
@@ -231,7 +234,7 @@ useEffect(() => {
                 value={form.id_structure}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-800 bg-white"
+                className={fieldControlClass}
               >
                 <option value="">Selectionner...</option>
                 {structures.map((s) => (
@@ -242,26 +245,69 @@ useEffect(() => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-2">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
               Etat fonctionnel *
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {etatOptions.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setForm({ ...form, etat: opt.value })}
                   className={`text-left border rounded-lg px-3 py-2 transition-colors ${
-                    form.etat === opt.value ? opt.color : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                    form.etat === opt.value ? opt.color : 'border-gray-300 text-slate-700 hover:bg-gray-50'
                   }`}
                 >
                   <p className="text-xs font-semibold">{opt.label}</p>
-                  <p className="text-[10px] mt-0.5 opacity-80">{opt.desc}</p>
+                  <p className="mt-0.5 text-xs opacity-80">{opt.desc}</p>
                 </button>
               ))}
             </div>
           </div>
 
+                    {(() => {
+            const selectedType = types.find((t) => String(t.id_type) === String(form.id_type));
+            const fields = selectedType ? typeFieldsConfig[selectedType.nom_type] : null;
+
+            if (!fields) return null;
+
+            return (
+              <div className="border-t border-gray-100 pt-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  Caracteristiques techniques — {selectedType.nom_type}
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {fields.map((field) => (
+                    <div key={field.key}>
+                      <label className={fieldLabelClass}>
+                        {field.label}
+                      </label>
+                      {field.type === 'select' ? (
+                        <select
+                          value={caracteristiques[field.key] || ''}
+                          onChange={(e) => handleCaracteristiqueChange(field.key, e.target.value)}
+                          className={fieldControlClass}
+                        >
+                          <option value="">Selectionner...</option>
+                          {field.options.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          value={caracteristiques[field.key] || ''}
+                          onChange={(e) => handleCaracteristiqueChange(field.key, e.target.value)}
+                          placeholder={field.placeholder}
+                          className={fieldControlClass}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
             <button
               type="button"

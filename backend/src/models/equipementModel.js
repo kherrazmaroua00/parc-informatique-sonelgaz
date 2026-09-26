@@ -168,4 +168,83 @@ async function getStats(id_structure = null) {
   return { total, ...counts };
 }
 
-module.exports = { getAll, getByCodeBarre, create, update, remove, getStats };
+// Validate a batch of rows before import: checks type/structure names resolve,
+// and flags duplicate code_barre (already in DB, or duplicated within the file itself)
+async function validateBatch(rows) {
+  const [types] = await pool.query(`SELECT id_type, nom_type FROM TypeEquipement`);
+  const [structures] = await pool.query(`SELECT id_structure, nom_structure FROM Structure`);
+  const [existing] = await pool.query(`SELECT code_barre FROM Equipement`);
+
+  const typeMap = new Map(types.map((t) => [t.nom_type.toLowerCase(), t.id_type]));
+  const structureMap = new Map(structures.map((s) => [s.nom_structure.toLowerCase(), s.id_structure]));
+  const existingCodes = new Set(existing.map((e) => e.code_barre));
+  const seenInFile = new Set();
+
+  return rows.map((row) => {
+    const issues = [];
+
+    if (!row.code_barre) issues.push('Code-barres manquant');
+    else if (existingCodes.has(row.code_barre)) issues.push('Doublon tag (deja en base)');
+    else if (seenInFile.has(row.code_barre)) issues.push('Doublon tag (dans le fichier)');
+
+    if (!row.designation) issues.push('Designation manquante');
+    if (!row.marque) issues.push('Marque manquante');
+
+    const id_type = typeMap.get((row.type || '').toLowerCase());
+    if (!id_type) issues.push(`Type inconnu: "${row.type}"`);
+
+    const id_structure = structureMap.get((row.structure || '').toLowerCase());
+    if (!id_structure) issues.push(`Structure inconnue: "${row.structure}"`);
+
+    if (row.code_barre) seenInFile.add(row.code_barre);
+
+    return {
+      ...row,
+      id_type: id_type || null,
+      id_structure: id_structure || null,
+      valid: issues.length === 0,
+      issues,
+    };
+  });
+}
+
+// Import only the valid rows from a previously validated batch, in one transaction
+async function importBatch(rows) {
+  const validRows = rows.filter((r) => r.valid);
+  if (validRows.length === 0) {
+    return { imported: 0 };
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    for (const row of validRows) {
+      await conn.query(
+        `INSERT INTO Equipement (code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          row.code_barre,
+          row.numero_serie || null,
+          row.designation,
+          row.marque,
+          row.reference || null,
+          row.annee_mise_en_service || null,
+          row.etat || 'actif',
+          row.id_type,
+          row.id_structure,
+        ]
+      );
+    }
+
+    await conn.commit();
+    return { imported: validRows.length };
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+module.exports = { getAll, getByCodeBarre, create, update, remove, getStats, validateBatch, importBatch };
