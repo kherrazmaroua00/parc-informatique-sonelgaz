@@ -1,18 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { LogOut, Wifi, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useStoredUser } from '@/lib/useStoredUser';
 
 export default function Header() {
-  const [user, setUser] = useState(null);
+  const user = useStoredUser();
   const router = useRouter();
-
-  useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
 
   function handleLogout() {
     localStorage.removeItem('token');
@@ -21,46 +16,48 @@ export default function Header() {
   }
 
   return (
-    <header className="h-16 bg-slate-900 text-white flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-800 bg-[#0f172a] px-5 text-white shadow-sm">
       <div className="flex items-center gap-3">
-        <Image
-          src="/images/logo_sonelgaz.png"
-          alt="Sonelgaz"
-          width={36}
-          height={36}
-          className="rounded"
-        />
+        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white/5 p-1.5">
+          <Image
+            src="/images/logo_sonelgaz.png"
+            alt="Sonelgaz"
+            width={32}
+            height={32}
+            className="rounded"
+          />
+        </div>
         <div className="leading-tight">
-          <p className="font-semibold text-sm">SONELGAZ</p>
-          <p className="text-xs text-slate-400">Direction de Distribution de Saida</p>
+          <p className="text-base font-bold tracking-[0.08em] text-white">SONELGAZ</p>
+          <p className="text-[11px] text-slate-400">Direction de Distribution de Saida</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="hidden md:flex items-center gap-1.5 text-xs bg-slate-800 px-3 py-1.5 rounded-full text-emerald-400">
-          <Wifi size={14} strokeWidth={2} />
-          Reseau Interne
+        <span className="hidden items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1.5 text-[11px] font-medium text-emerald-400 md:flex">
+          <Wifi size={13} strokeWidth={2} />
+          Réseau Interne
         </span>
 
-        <span className="hidden lg:flex items-center gap-1.5 text-xs bg-slate-800 px-3 py-1.5 rounded-full text-slate-300">
-          <Server size={14} strokeWidth={2} />
+        <span className="hidden items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1.5 text-[11px] font-medium text-slate-300 lg:flex">
+          <Server size={13} strokeWidth={2} />
           SRV-PARC-SDA:01
         </span>
 
         {user && (
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">{user.nom}</p>
-            <p className="text-xs text-slate-400">
-              {user.role === 'admin' ? 'Administrateur' : 'Consultation'}
+          <div className="hidden text-right sm:block">
+            <p className="text-sm font-medium text-white">{user.nom}</p>
+            <p className="text-[11px] text-slate-400">
+              {user.role === 'admin' ? 'Administrateur' : user.role === 'chef_structure' ? 'Chef de structure' : 'Consultation'}
             </p>
           </div>
         )}
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 text-xs bg-red-600/10 text-red-400 hover:bg-red-600/20 px-3 py-1.5 rounded-full transition-colors"
+          className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[11px] font-medium text-red-300 transition-colors hover:bg-red-500/20"
         >
-          <LogOut size={14} strokeWidth={2} />
+          <LogOut size={13} strokeWidth={2} />
           Log out
         </button>
       </div>

@@ -33,7 +33,7 @@ export default function Sidebar() {
   const user = useStoredUser();
 
   const visibleItems = user?.role === 'admin'
-    ? navItems
+    ? navItems.filter((item) => ['/dashboard', '/consommables', '/structures', '/utilisateurs', '/historique'].includes(item.href))
     : navItems
       .filter((item) => ['/dashboard', '/equipements', '/demandes'].includes(item.href))
       .map((item) => item.href === '/demandes' ? { ...item, label: 'Mes demandes' } : item);
@@ -45,12 +45,11 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-48 shrink-0 flex-col border-r border-slate-200 bg-[#f1f5ff] sm:w-56">
-      <div className="px-3 pb-2 pt-5">
-        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Navigation</p>
-      </div>
-
+    <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-56 shrink-0 flex-col border-r border-slate-200 bg-[#f3f7ff]">
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+        <p className="mb-2 px-2 pt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+          {user?.role === 'admin' ? 'Administration' : 'Mon espace'}
+        </p>
         {visibleItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
@@ -58,32 +57,49 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-2.5 rounded px-2.5 py-2 text-xs font-semibold transition-colors ${
+              className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[12px] font-semibold transition-colors ${
                 isActive
-                  ? 'bg-sky-950 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'
+                  ? 'bg-[#0f172a] text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-white hover:text-slate-900'
               }`}
             >
-              <Icon size={18} strokeWidth={1.75} />
+              <Icon size={16} strokeWidth={1.8} />
               {item.label}
             </Link>
           );
         })}
+        {user?.role === 'admin' && (
+          <>
+            <p className="mb-2 mt-6 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Suivi opérationnel</p>
+            {navItems.filter((item) => ['/equipements', '/demandes'].includes(item.href)).map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={`operations-${item.href}`}
+                  href={item.href}
+                  className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[12px] font-semibold transition-colors ${isActive ? 'bg-[#0f172a] text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-slate-900'}`}
+                >
+                  <Icon size={16} strokeWidth={1.8} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
-      <div className="m-3 rounded-md border border-sky-100 bg-[#e6efff] p-3">
-        <p className="flex items-start gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-700"><MapPin size={13} className="shrink-0 text-sky-800" />Périmètre</p>
-        <p className="mt-1 pl-5 text-[10px] leading-relaxed text-slate-600">{user?.role === 'admin' ? 'Administration du parc informatique' : user?.nom_structure || 'Structure rattachée au compte'}</p>
+      <div className="m-3 rounded-md border border-sky-100 bg-[#eaf2ff] p-3">
+        <p className="flex items-start gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700">
+          <MapPin size={12} className="mt-0.5 shrink-0 text-sky-800" />
+          Périmètre
+        </p>
+        <p className="mt-1 pl-5 text-[10px] leading-relaxed text-slate-600">
+          {user?.role === 'admin' ? 'Administration du parc informatique' : user?.nom_structure || 'Structure rattachée au compte'}
+        </p>
       </div>
-      <div className="border-t border-slate-200 p-3">
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-50"
-        >
-          <LogOut size={18} strokeWidth={1.75} />
-          Deconnexion
-        </button>
-      </div>
+
+    
     </aside>
   );
 }

@@ -29,8 +29,8 @@ async function getStats(req, res) {
 
 async function create(req, res) {
   try {
-    const { nom, login, email, id_structure } = req.body;
-    if (!nom || !login || !email || !id_structure) {
+    const { nom, login, email, role, id_structure } = req.body;
+    if (!nom || !login || !email || !id_structure || !['consultation', 'chef_structure'].includes(role)) {
       return res.status(400).json({ message: 'Tous les champs obligatoires doivent etre renseignes' });
     }
 
@@ -80,8 +80,8 @@ async function sendInvitation(req, res) {
 
 async function update(req, res) {
   try {
-    const { nom, login, email, id_structure } = req.body;
-    if (!nom || !login || !email || !id_structure || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const { nom, login, email, role, id_structure } = req.body;
+    if (!nom || !login || !email || !id_structure || !['consultation', 'chef_structure'].includes(role) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: 'Nom, login, email et structure valides sont obligatoires' });
     }
 

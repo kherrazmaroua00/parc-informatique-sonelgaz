@@ -7,7 +7,7 @@ async function getAll() {
            s.nom_structure
     FROM Utilisateur u
     LEFT JOIN Structure s ON s.id_structure = u.id_structure
-    WHERE u.role = 'consultation'
+    WHERE u.role IN ('consultation', 'chef_structure')
     ORDER BY u.role ASC, u.nom ASC
   `);
   return rows;
@@ -26,33 +26,34 @@ async function getById(id_utilisateur) {
 }
 
 async function getStats() {
-  const [[total]] = await pool.query(`SELECT COUNT(*) AS total_utilisateurs FROM Utilisateur WHERE role = 'consultation'`);
+  const [[total]] = await pool.query(`SELECT COUNT(*) AS total_utilisateurs FROM Utilisateur WHERE role IN ('consultation', 'chef_structure')`);
   const [[admin]] = await pool.query(`SELECT COUNT(*) AS total_admins FROM Utilisateur WHERE role = 'admin'`);
   const [[consultation]] = await pool.query(`SELECT COUNT(*) AS total_consultation FROM Utilisateur WHERE role = 'consultation'`);
+  const [[chefs]] = await pool.query(`SELECT COUNT(*) AS total_chefs_structure FROM Utilisateur WHERE role = 'chef_structure'`);
   const [[assigned]] = await pool.query(`
     SELECT COUNT(*) AS utilisateurs_affectes
     FROM Utilisateur u
     INNER JOIN Structure s ON s.id_structure = u.id_structure
-    WHERE u.role = 'consultation'
+    WHERE u.role IN ('consultation', 'chef_structure')
   `);
 
-  return { ...total, ...admin, ...consultation, ...assigned };
+  return { ...total, ...admin, ...consultation, ...chefs, ...assigned };
 }
 
 async function create(data, invitationTokenHash, invitationExpiresAt) {
-  const { nom, login, email, password, id_structure } = data;
+  const { nom, login, email, password, role, id_structure } = data;
   const hashedPassword = await bcrypt.hash(password, 10);
   const [result] = await pool.query(
     `INSERT INTO Utilisateur
      (nom, login, email, mot_de_passe, invitation_token_hash, invitation_expires_at, role, id_structure)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [nom, login, email, hashedPassword, invitationTokenHash, invitationExpiresAt, 'consultation', id_structure]
+    [nom, login, email, hashedPassword, invitationTokenHash, invitationExpiresAt, role, id_structure]
   );
   return getById(result.insertId);
 }
 
 async function update(id_utilisateur, data) {
-  const { nom, login, email, password, id_structure } = data;
+  const { nom, login, email, password, role, id_structure } = data;
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query(
@@ -60,7 +61,7 @@ async function update(id_utilisateur, data) {
          SET nom = ?, login = ?, email = ?, mot_de_passe = ?, invitation_token_hash = NULL,
            invitation_expires_at = NULL, role = ?, id_structure = ?
        WHERE id_utilisateur = ?`,
-      [nom, login, email, hashedPassword, 'consultation', id_structure, id_utilisateur]
+      [nom, login, email, hashedPassword, role, id_structure, id_utilisateur]
     );
   } else {
     await pool.query(
@@ -68,7 +69,7 @@ async function update(id_utilisateur, data) {
          SET nom = ?, login = ?, email = ?, invitation_token_hash = NULL,
            invitation_expires_at = NULL, role = ?, id_structure = ?
        WHERE id_utilisateur = ?`,
-      [nom, login, email, 'consultation', id_structure, id_utilisateur]
+      [nom, login, email, role, id_structure, id_utilisateur]
     );
   }
   return getById(id_utilisateur);

@@ -4,7 +4,7 @@ const equipementModel = require('../models/equipementModel');
 // GET /api/equipements
 async function getAll(req, res) {
   try {
-    const id_structure = req.user.role === 'consultation' ? req.user.id_structure : null;
+    const id_structure = req.user.role === 'admin' ? null : req.user.id_structure;
 
     const result = await equipementModel.getAll({
       id_structure,
@@ -32,8 +32,8 @@ async function getOne(req, res) {
       return res.status(404).json({ message: 'Equipement non trouve' });
     }
 
-    // A 'consultation' user can only view equipment from their own structure
-    if (req.user.role === 'consultation' && equipement.id_structure !== req.user.id_structure) {
+    // Non-admin users can only view equipment from their own structure
+    if (req.user.role !== 'admin' && equipement.id_structure !== req.user.id_structure) {
       return res.status(403).json({ message: 'Acces refuse a cet equipement' });
     }
 
@@ -89,7 +89,7 @@ async function remove(req, res) {
 // GET /api/equipements/stats
 async function getStats(req, res) {
   try {
-    const id_structure = req.user.role === 'consultation' ? req.user.id_structure : null;
+    const id_structure = req.user.role === 'admin' ? null : req.user.id_structure;
     const stats = await equipementModel.getStats(id_structure);
     res.json(stats);
   } catch (error) {

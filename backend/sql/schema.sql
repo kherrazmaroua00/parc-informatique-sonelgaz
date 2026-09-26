@@ -22,7 +22,7 @@ CREATE TABLE Utilisateur (
     mot_de_passe VARCHAR(255) NOT NULL,
     invitation_token_hash CHAR(64) NULL,
     invitation_expires_at DATETIME NULL,
-    role ENUM('admin', 'consultation') NOT NULL,
+    role ENUM('admin', 'consultation', 'chef_structure') NOT NULL,
     id_structure INT NOT NULL,
     FOREIGN KEY (id_structure) REFERENCES Structure(id_structure)
 );
@@ -53,7 +53,8 @@ CREATE TABLE Consommable (
     id_consommable INT AUTO_INCREMENT PRIMARY KEY,
     designation VARCHAR(100) NOT NULL,
     type_consommable VARCHAR(50),
-    quantite_stock INT NOT NULL DEFAULT 0
+    quantite_stock INT NOT NULL DEFAULT 0,
+    actif TINYINT(1) NOT NULL DEFAULT 1
 );
 
 CREATE TABLE Demande (

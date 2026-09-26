@@ -12,7 +12,7 @@ function withNiveau(row) {
 
 // Get consommables with search, type filter, niveau filter, and pagination
 async function getAll({ search = '', type_consommable = null, niveau = null, page = 1, limit = 10 } = {}) {
-  let query = `SELECT * FROM Consommable WHERE 1=1`;
+  let query = `SELECT * FROM Consommable WHERE actif = 1`;
   const params = [];
 
   if (search) {
@@ -56,23 +56,60 @@ async function getById(id_consommable) {
 
 // Global stats: total references, rupture count, faible count, distinct types
 async function getStats() {
-  const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Consommable`);
+  const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Consommable WHERE actif = 1`);
   const [[{ rupture }]] = await pool.query(
-    `SELECT COUNT(*) AS rupture FROM Consommable WHERE quantite_stock = 0`
+    `SELECT COUNT(*) AS rupture FROM Consommable WHERE actif = 1 AND quantite_stock = 0`
   );
   const [[{ faible }]] = await pool.query(
-    `SELECT COUNT(*) AS faible FROM Consommable WHERE quantite_stock > 0 AND quantite_stock < ${SEUIL_FAIBLE}`
+    `SELECT COUNT(*) AS faible FROM Consommable WHERE actif = 1 AND quantite_stock > 0 AND quantite_stock < ${SEUIL_FAIBLE}`
   );
   const [types] = await pool.query(
-    `SELECT DISTINCT type_consommable FROM Consommable WHERE type_consommable IS NOT NULL ORDER BY type_consommable`
+    `SELECT DISTINCT type_consommable FROM Consommable WHERE actif = 1 AND type_consommable IS NOT NULL ORDER BY type_consommable`
+  );
+  const [populaires] = await pool.query(
+    `SELECT c.id_consommable, c.designation, c.type_consommable, COALESCE(SUM(l.quantite), 0) AS quantite_demandee
+     FROM Consommable c
+     LEFT JOIN LigneDemande l ON l.id_consommable = c.id_consommable
+     WHERE c.actif = 1
+     GROUP BY c.id_consommable
+     ORDER BY quantite_demandee DESC, c.designation ASC
+     LIMIT 4`
   );
 
-  return { total, rupture, faible, alertes: rupture + faible, types: types.map((t) => t.type_consommable) };
+  return {
+    total,
+    rupture,
+    faible,
+    alertes: rupture + faible,
+    types: types.map((t) => t.type_consommable),
+    populaires,
+  };
 }
 
 // Create a new consommable
 async function create(data) {
   const { designation, reference, type_consommable, quantite_stock, emplacement } = data;
+
+  // Check if a consommable with the same designation (or same reference, if provided) already exists
+  const [existingRows] = await pool.query(
+    reference
+      ? `SELECT * FROM Consommable WHERE actif = 1 AND (designation = ? OR reference = ?)`
+      : `SELECT * FROM Consommable WHERE actif = 1 AND designation = ?`,
+    reference ? [designation, reference] : [designation]
+  );
+
+  if (existingRows.length > 0) {
+    // Merge: add the new quantity to the existing item's stock instead of duplicating
+    const existing = existingRows[0];
+    const nouvelleQuantite = existing.quantite_stock + (Number(quantite_stock) || 0);
+    await pool.query(
+      `UPDATE Consommable SET quantite_stock = ? WHERE id_consommable = ?`,
+      [nouvelleQuantite, existing.id_consommable]
+    );
+    const merged = await getById(existing.id_consommable);
+    return { ...merged, merged: true, ancienne_quantite: existing.quantite_stock };
+  }
+
   const [result] = await pool.query(
     `INSERT INTO Consommable (designation, reference, type_consommable, quantite_stock, emplacement) VALUES (?, ?, ?, ?, ?)`,
     [designation, reference, type_consommable, quantite_stock || 0, emplacement]
@@ -92,11 +129,11 @@ async function update(id_consommable, data) {
 
 // Delete a consommable
 async function remove(id_consommable) {
-  await pool.query(`DELETE FROM Consommable WHERE id_consommable = ?`, [id_consommable]);
+  await pool.query(`UPDATE Consommable SET actif = 0 WHERE id_consommable = ?`, [id_consommable]);
 }
 // Validate a batch of rows before import
 async function validateBatch(rows) {
-  const [existing] = await pool.query(`SELECT reference FROM Consommable WHERE reference IS NOT NULL`);
+  const [existing] = await pool.query(`SELECT reference FROM Consommable WHERE actif = 1 AND reference IS NOT NULL`);
   const existingRefs = new Set(existing.map((e) => e.reference));
   const seenInFile = new Set();
 

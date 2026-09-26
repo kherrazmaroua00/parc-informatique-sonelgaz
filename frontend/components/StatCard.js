@@ -1,22 +1,22 @@
 export default function StatCard({ icon: Icon, label, value, subtext, subtextDetail }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-gray-400 tracking-wide uppercase">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_1px_0_rgba(15,23,42,0.02)]">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
           {label}
         </p>
-        <div className="text-gray-300">
-          <Icon size={18} strokeWidth={1.75} />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+          <Icon size={16} strokeWidth={1.75} />
         </div>
       </div>
 
-      <p className="text-3xl font-bold text-gray-900 mb-2">{value}</p>
+      <p className="mb-2 text-[2rem] font-bold tracking-tight text-slate-900">{value}</p>
 
       {subtext && (
-        <p className="text-xs text-emerald-600 font-medium mb-1">{subtext}</p>
+        <p className="mb-1 text-xs font-medium text-emerald-600">{subtext}</p>
       )}
       {subtextDetail && (
-        <p className="text-xs text-gray-400">{subtextDetail}</p>
+        <p className="text-xs text-slate-400">{subtextDetail}</p>
       )}
     </div>
   );

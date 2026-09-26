@@ -12,15 +12,15 @@ const structures = [
 
 const users = [
   { nom: 'Admin Principal', login: 'admin', role: 'admin', structure: 'DSI', password: 'admin123' },
-  { nom: 'Karim Benali', login: 'k.benali', role: 'consultation', structure: 'DSI', type: 'chef' },
-  { nom: 'Kaddour Bouziane', login: 'k.bouziane', role: 'consultation', structure: 'DTE', type: 'chef' },
-  { nom: 'Mohamed Brahimi', login: 'm.brahimi', role: 'consultation', structure: 'DRC', type: 'chef' },
+  { nom: 'Karim Benali', login: 'k.benali', role: 'chef_structure', structure: 'DSI' },
+  { nom: 'Kaddour Bouziane', login: 'k.bouziane', role: 'chef_structure', structure: 'DTE' },
+  { nom: 'Mohamed Brahimi', login: 'm.brahimi', role: 'chef_structure', structure: 'DRC' },
   { nom: 'Abdelkader Mansour', login: 'a.mansour', role: 'consultation', structure: 'DTE' },
   { nom: 'Rachid Benali', login: 'r.benali', role: 'consultation', structure: 'DRC' },
-  { nom: 'Fatima Zohra Mansouri', login: 'fz.mansouri', role: 'consultation', structure: 'DFC', type: 'chef' },
-  { nom: 'Youcef Belhadj', login: 'y.belhadj', role: 'consultation', structure: 'DRH', type: 'chef' },
+  { nom: 'Fatima Zohra Mansouri', login: 'fz.mansouri', role: 'chef_structure', structure: 'DFC' },
+  { nom: 'Youcef Belhadj', login: 'y.belhadj', role: 'chef_structure', structure: 'DRH' },
   { nom: 'Mustapha Larbi', login: 'm.larbi', role: 'consultation', structure: 'DSI' },
-  { nom: 'Nadia Benaissa', login: 'n.benaissa', role: 'consultation', structure: 'DAG', type: 'chef' },
+  { nom: 'Nadia Benaissa', login: 'n.benaissa', role: 'chef_structure', structure: 'DAG' },
   { nom: 'Samir Haddad', login: 's.haddad', role: 'consultation', structure: 'DAG' },
   { nom: 'Amina Saidi', login: 'a.saidi', role: 'consultation', structure: 'DRH' },
 ];
