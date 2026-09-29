@@ -47,7 +47,7 @@ async function getOne(req, res) {
 // POST /api/equipements
 async function create(req, res) {
   try {
-    const newEquipement = await equipementModel.create(req.body);
+    const newEquipement = await equipementModel.create(req.body, req.user.id_utilisateur);
     res.status(201).json(newEquipement);
   } catch (error) {
     console.error(error);
@@ -63,7 +63,7 @@ async function update(req, res) {
       return res.status(404).json({ message: 'Equipement non trouve' });
     }
 
-    const updated = await equipementModel.update(req.params.code_barre, req.body);
+    const updated = await equipementModel.update(req.params.code_barre, req.body, req.user.id_utilisateur);
     res.json(updated);
   } catch (error) {
     console.error(error);
@@ -120,7 +120,7 @@ async function importBatch(req, res) {
     if (!Array.isArray(rows)) {
       return res.status(400).json({ message: 'Le champ rows doit etre un tableau' });
     }
-    const result = await equipementModel.importBatch(rows);
+    const result = await equipementModel.importBatch(rows, req.user.id_utilisateur);
     res.status(201).json(result);
   } catch (error) {
     console.error(error);

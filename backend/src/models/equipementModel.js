@@ -79,7 +79,7 @@ async function getByCodeBarre(code_barre) {
 }
 
 // Create a new equipement
-async function create(data) {
+async function create(data, id_utilisateur) {
   const { code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, caracteristiques } = data;
 
   const conn = await pool.getConnection();
@@ -90,6 +90,11 @@ async function create(data) {
       `INSERT INTO Equipement (code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [code_barre, numero_serie, designation, marque, reference, annee_mise_en_service, etat || 'actif', id_type, id_structure]
+    );
+
+    await conn.query(
+      `INSERT INTO Mouvement (type_mouvement, code_barre, id_utilisateur, id_structure, details) VALUES ('affectation', ?, ?, ?, 'Affectation initiale')`,
+      [code_barre, id_utilisateur, id_structure]
     );
 
     if (Array.isArray(caracteristiques)) {
@@ -113,12 +118,17 @@ async function create(data) {
 }
 
 // Update an existing equipement
-async function update(code_barre, data) {
+async function update(code_barre, data, id_utilisateur) {
   const { numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, caracteristiques } = data;
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
+
+    const [[previous]] = await conn.query(
+      `SELECT etat, id_structure FROM Equipement WHERE code_barre = ? FOR UPDATE`,
+      [code_barre]
+    );
 
     await conn.query(
       `UPDATE Equipement
@@ -126,6 +136,19 @@ async function update(code_barre, data) {
        WHERE code_barre = ?`,
       [numero_serie, designation, marque, reference, annee_mise_en_service, etat, id_type, id_structure, code_barre]
     );
+
+    if (previous && previous.etat !== etat) {
+      await conn.query(
+        `INSERT INTO Mouvement (type_mouvement, code_barre, id_utilisateur, id_structure, details) VALUES ('changement_etat', ?, ?, ?, CONCAT('Etat: ', ?, ' -> ', ?))`,
+        [code_barre, id_utilisateur, id_structure, previous.etat, etat]
+      );
+    }
+    if (previous && Number(previous.id_structure) !== Number(id_structure)) {
+      await conn.query(
+        `INSERT INTO Mouvement (type_mouvement, code_barre, id_utilisateur, id_structure, details) VALUES ('affectation', ?, ?, ?, CONCAT('Structure: #', ?, ' -> #', ?))`,
+        [code_barre, id_utilisateur, id_structure, previous.id_structure, id_structure]
+      );
+    }
 
     if (Array.isArray(caracteristiques)) {
       await conn.query(`DELETE FROM Caracteristique WHERE code_barre = ?`, [code_barre]);
@@ -209,7 +232,7 @@ async function validateBatch(rows) {
 }
 
 // Import only the valid rows from a previously validated batch, in one transaction
-async function importBatch(rows) {
+async function importBatch(rows, id_utilisateur) {
   const validRows = rows.filter((r) => r.valid);
   if (validRows.length === 0) {
     return { imported: 0 };
@@ -234,6 +257,10 @@ async function importBatch(rows) {
           row.id_type,
           row.id_structure,
         ]
+      );
+      await conn.query(
+        `INSERT INTO Mouvement (type_mouvement, code_barre, id_utilisateur, id_structure, details) VALUES ('affectation', ?, ?, ?, 'Importation / affectation initiale')`,
+        [row.code_barre, id_utilisateur, row.id_structure]
       );
     }
 

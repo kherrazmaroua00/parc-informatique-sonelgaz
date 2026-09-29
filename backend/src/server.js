@@ -9,6 +9,7 @@ const consommableRoutes = require('./routes/consommableRoutes');
 const typeEquipementRoutes = require('./routes/typeEquipementRoutes');
 const utilisateurRoutes = require('./routes/utilisateurRoutes');
 const demandeRoutes = require('./routes/demandeRoutes');
+const historiqueRoutes = require('./routes/historiqueRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/consommables', consommableRoutes);
 app.use('/api/types', typeEquipementRoutes);
 app.use('/api/utilisateurs', utilisateurRoutes);
 app.use('/api/demandes', demandeRoutes);
+app.use('/api/historique', historiqueRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {

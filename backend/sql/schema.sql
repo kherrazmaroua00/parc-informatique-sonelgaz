@@ -87,8 +87,11 @@ CREATE TABLE Mouvement (
     code_barre VARCHAR(50),
     id_utilisateur INT NOT NULL,
     id_demande INT,
+    id_structure INT,
+    details VARCHAR(255),
     FOREIGN KEY (id_consommable) REFERENCES Consommable(id_consommable),
     FOREIGN KEY (code_barre) REFERENCES Equipement(code_barre),
     FOREIGN KEY (id_utilisateur) REFERENCES Utilisateur(id_utilisateur),
-    FOREIGN KEY (id_demande) REFERENCES Demande(id_demande)
+    FOREIGN KEY (id_demande) REFERENCES Demande(id_demande),
+    FOREIGN KEY (id_structure) REFERENCES Structure(id_structure)
 );

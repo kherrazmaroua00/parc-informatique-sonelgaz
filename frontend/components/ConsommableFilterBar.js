@@ -11,13 +11,13 @@ export default function ConsommableFilterBar({
   return (
     <div className="flex items-center gap-3 mb-4">
       <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-        <Search size={16} className="text-gray-400" strokeWidth={1.75} />
+        <Search size={16} className="text-black" strokeWidth={1.75} />
         <input
           type="text"
           placeholder="Rechercher par designation ou reference..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="flex-1 text-sm outline-none"
+          className="flex-1 text-sm text-black placeholder:text-gray-600 outline-none"
         />
       </div>
 

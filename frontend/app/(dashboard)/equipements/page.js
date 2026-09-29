@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Download, Plus, Boxes, CheckCircle2, AlertTriangle, XCircle, Archive } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import StatCardMini from '@/components/StatCardMini';
@@ -8,6 +8,7 @@ import EquipementFilterBar from '@/components/EquipementFilterBar';
 import EquipementRow from '@/components/EquipementRow';
 import Pagination from '@/components/Pagination';
 import EquipementFormModal from '@/components/EquipementFormModal';
+import EquipementDetailsPanel from '@/components/EquipementDetailsPanel';
 import { useStoredUser } from '@/lib/useStoredUser';
 import { useRouter } from 'next/navigation';
 
@@ -33,6 +34,10 @@ export default function EquipementsPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEquipement, setEditingEquipement] = useState(null);
+  const [selectedEquipement, setSelectedEquipement] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+  const detailRequestId = useRef(0);
 
   // Load static reference data once (types, structures)
   useEffect(() => {
@@ -88,8 +93,27 @@ export default function EquipementsPage() {
     setStructureFilter('');
   }
 
-  function handleView(equipement) {
-    console.log('view', equipement);
+  async function handleView(equipement) {
+    const requestId = ++detailRequestId.current;
+    setSelectedEquipement(equipement);
+    setDetailLoading(true);
+    setDetailError('');
+
+    try {
+      const details = await apiFetch(`/equipements/${encodeURIComponent(equipement.code_barre)}`);
+      if (detailRequestId.current === requestId) setSelectedEquipement(details);
+    } catch (err) {
+      if (detailRequestId.current === requestId) setDetailError(err.message);
+    } finally {
+      if (detailRequestId.current === requestId) setDetailLoading(false);
+    }
+  }
+
+  function handleCloseDetails() {
+    detailRequestId.current += 1;
+    setSelectedEquipement(null);
+    setDetailLoading(false);
+    setDetailError('');
   }
 
   function handleEdit(equipement) {
@@ -239,6 +263,12 @@ async function handleFormSubmit(formData) {
         initialData={editingEquipement}
         types={types}
         structures={structures}
+      />
+      <EquipementDetailsPanel
+        equipement={selectedEquipement}
+        loading={detailLoading}
+        error={detailError}
+        onClose={handleCloseDetails}
       />
     </main>
   );
