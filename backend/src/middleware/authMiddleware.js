@@ -22,6 +22,17 @@ function verifyToken(req, res, next) {
   }
 }
 
+// Generic role guard: requireRole('admin', 'operateur') lets either role through.
+// Kept alongside requireAdmin/requireOperateur below so existing imports don't break.
+function requireRole(...allowedRoles) {
+  return function (req, res, next) {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Acces non autorise pour ce role' });
+    }
+    next();
+  };
+}
+
 function requireAdmin(req, res, next) {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Acces reserve a l\'administrateur' });
@@ -29,4 +40,13 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { verifyToken, requireAdmin };
+// Only an operateur can validate or refuse a demande.
+// L'administrateur passe desormais par les routes GET (lecture seule) uniquement.
+function requireOperateur(req, res, next) {
+  if (req.user.role !== 'operateur') {
+    return res.status(403).json({ message: 'Acces reserve a l\'operateur' });
+  }
+  next();
+}
+
+module.exports = { verifyToken, requireAdmin, requireOperateur, requireRole };

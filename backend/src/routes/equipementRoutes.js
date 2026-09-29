@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const equipementController = require('../controllers/equipementController');
-const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
+const { verifyToken, requireAdmin, requireRole } = require('../middleware/authMiddleware');
+const requireAppUser = requireRole('admin', 'consultation', 'chef_structure');
 
 // All equipement routes require a valid token (must be logged in)
 router.use(verifyToken);
 
 // Both roles can read
-router.get('/stats', equipementController.getStats);
-router.get('/', equipementController.getAll);
-router.get('/:code_barre', equipementController.getOne);
+router.get('/stats', requireAppUser, equipementController.getStats);
+router.get('/', requireAppUser, equipementController.getAll);
+router.get('/:code_barre', requireAppUser, equipementController.getOne);
 router.post('/batch/validate', requireAdmin, equipementController.validateBatch);
 router.post('/batch/import', requireAdmin, equipementController.importBatch);
 

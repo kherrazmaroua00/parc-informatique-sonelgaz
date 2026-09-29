@@ -2,6 +2,8 @@ const utilisateurModel = require('../models/utilisateurModel');
 const crypto = require('crypto');
 const emailService = require('../services/emailService');
 
+const ROLES_CREABLES = ['consultation', 'chef_structure', 'operateur'];
+
 function createInvitationToken() {
   const token = crypto.randomBytes(32).toString('hex');
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -30,7 +32,12 @@ async function getStats(req, res) {
 async function create(req, res) {
   try {
     const { nom, login, email, role, id_structure } = req.body;
-    if (!nom || !login || !email || !id_structure || !['consultation', 'chef_structure'].includes(role)) {
+    // Un operateur n'appartient pas a une structure en particulier (il traite
+    // les demandes de toutes les structures), donc id_structure n'est requis
+    // que pour consultation / chef_structure.
+    const structureRequise = role !== 'operateur';
+
+    if (!nom || !login || !email || !ROLES_CREABLES.includes(role) || (structureRequise && !id_structure)) {
       return res.status(400).json({ message: 'Tous les champs obligatoires doivent etre renseignes' });
     }
 
@@ -41,7 +48,7 @@ async function create(req, res) {
     const { token, tokenHash, expiresAt } = createInvitationToken();
     const temporaryPassword = crypto.randomBytes(32).toString('base64url');
     const user = await utilisateurModel.create(
-      { ...req.body, password: temporaryPassword },
+      { ...req.body, id_structure: structureRequise ? id_structure : null, password: temporaryPassword },
       tokenHash,
       expiresAt
     );
@@ -81,13 +88,15 @@ async function sendInvitation(req, res) {
 async function update(req, res) {
   try {
     const { nom, login, email, role, id_structure } = req.body;
-    if (!nom || !login || !email || !id_structure || !['consultation', 'chef_structure'].includes(role) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Nom, login, email et structure valides sont obligatoires' });
+    const structureRequise = role !== 'operateur';
+
+    if (!nom || !login || !email || !ROLES_CREABLES.includes(role) || (structureRequise && !id_structure) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: 'Nom, login, email et role valides sont obligatoires' });
     }
 
     const existing = await utilisateurModel.getById(req.params.id);
     if (!existing) return res.status(404).json({ message: 'Utilisateur non trouve' });
-    res.json(await utilisateurModel.update(req.params.id, req.body));
+    res.json(await utilisateurModel.update(req.params.id, { ...req.body, id_structure: structureRequise ? id_structure : null }));
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'Ce login ou cette adresse email est deja utilise' });

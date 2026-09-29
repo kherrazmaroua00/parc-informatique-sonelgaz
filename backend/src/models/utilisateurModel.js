@@ -1,15 +1,18 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 
+const ROLES_GERES = ['consultation', 'chef_structure', 'operateur'];
+
 async function getAll() {
-  const [rows] = await pool.query(`
-    SELECT u.id_utilisateur, u.nom, u.login, u.email, u.role, u.id_structure,
-           s.nom_structure
-    FROM Utilisateur u
-    LEFT JOIN Structure s ON s.id_structure = u.id_structure
-    WHERE u.role IN ('consultation', 'chef_structure')
-    ORDER BY u.role ASC, u.nom ASC
-  `);
+  const [rows] = await pool.query(
+    `SELECT u.id_utilisateur, u.nom, u.login, u.email, u.role, u.id_structure,
+            s.nom_structure
+     FROM Utilisateur u
+     LEFT JOIN Structure s ON s.id_structure = u.id_structure
+     WHERE u.role IN (?)
+     ORDER BY u.role ASC, u.nom ASC`,
+    [ROLES_GERES]
+  );
   return rows;
 }
 
@@ -26,18 +29,19 @@ async function getById(id_utilisateur) {
 }
 
 async function getStats() {
-  const [[total]] = await pool.query(`SELECT COUNT(*) AS total_utilisateurs FROM Utilisateur WHERE role IN ('consultation', 'chef_structure')`);
+  const [[total]] = await pool.query(`SELECT COUNT(*) AS total_utilisateurs FROM Utilisateur WHERE role IN (?)`, [ROLES_GERES]);
   const [[admin]] = await pool.query(`SELECT COUNT(*) AS total_admins FROM Utilisateur WHERE role = 'admin'`);
+  const [[operateur]] = await pool.query(`SELECT COUNT(*) AS total_operateurs FROM Utilisateur WHERE role = 'operateur'`);
   const [[consultation]] = await pool.query(`SELECT COUNT(*) AS total_consultation FROM Utilisateur WHERE role = 'consultation'`);
   const [[chefs]] = await pool.query(`SELECT COUNT(*) AS total_chefs_structure FROM Utilisateur WHERE role = 'chef_structure'`);
   const [[assigned]] = await pool.query(`
     SELECT COUNT(*) AS utilisateurs_affectes
     FROM Utilisateur u
     INNER JOIN Structure s ON s.id_structure = u.id_structure
-    WHERE u.role IN ('consultation', 'chef_structure')
-  `);
+    WHERE u.role IN (?)
+  `, [ROLES_GERES]);
 
-  return { ...total, ...admin, ...consultation, ...chefs, ...assigned };
+  return { ...total, ...admin, ...operateur, ...consultation, ...chefs, ...assigned };
 }
 
 async function create(data, invitationTokenHash, invitationExpiresAt) {

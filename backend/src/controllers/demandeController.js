@@ -1,9 +1,15 @@
 const demandeModel = require('../models/demandeModel');
 
 // GET /api/demandes
+// admin et operateur voient toutes les structures (avec filtre optionnel via ?id_structure=)
+// consultation / chef_structure sont toujours limites a leur propre structure
 async function getAll(req, res) {
   try {
-    const id_structure = req.user.role !== 'admin' ? req.user.id_structure : (req.query.id_structure || null);
+    const rolesSansFiltre = ['admin', 'operateur'];
+    const id_structure = rolesSansFiltre.includes(req.user.role)
+      ? (req.query.id_structure || null)
+      : req.user.id_structure;
+
     const demandes = await demandeModel.getAll({
       id_structure,
       etat: req.query.etat || null,
@@ -57,7 +63,7 @@ async function create(req, res) {
   }
 }
 
-// PATCH /api/demandes/:id/accorder
+// PATCH /api/demandes/:id/accorder  -- reserve a l'operateur (voir demandeRoutes.js)
 async function accorder(req, res) {
   try {
     const demande = await demandeModel.getById(req.params.id);
@@ -73,7 +79,7 @@ async function accorder(req, res) {
   }
 }
 
-// PATCH /api/demandes/:id/remettre
+// PATCH /api/demandes/:id/remettre  -- reserve a l'operateur (voir demandeRoutes.js)
 async function marquerRemis(req, res) {
   try {
     const demande = await demandeModel.getById(req.params.id);
@@ -89,7 +95,7 @@ async function marquerRemis(req, res) {
   }
 }
 
-// PATCH /api/demandes/:id/refuser
+// PATCH /api/demandes/:id/refuser  -- reserve a l'operateur (voir demandeRoutes.js)
 async function refuser(req, res) {
   try {
     const demande = await demandeModel.getById(req.params.id);

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const typeEquipementController = require('../controllers/typeEquipementController');
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, requireRole } = require('../middleware/authMiddleware');
+const requireAppUser = requireRole('admin', 'consultation', 'chef_structure');
 
 router.use(verifyToken);
-router.get('/', typeEquipementController.getAll);
+router.get('/', requireAppUser, typeEquipementController.getAll);
 
 module.exports = router;

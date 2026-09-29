@@ -36,6 +36,10 @@ export default function DashboardLayout({ children }) {
   }, [isAuthenticated, router]);
 
   useEffect(() => {
+    if (user?.role === 'operateur') {
+      if (pathname !== '/demandes') router.replace('/demandes');
+      return;
+    }
     if (user && user.role !== 'admin' && adminOnlyPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
       router.replace('/dashboard');
     }
@@ -45,6 +49,7 @@ export default function DashboardLayout({ children }) {
   }, [pathname, router, user]);
 
   if (!isAuthenticated) return null;
+  if (user?.role === 'operateur' && pathname !== '/demandes') return null;
 
   return (
     <div className="min-h-screen bg-[#eef3fb]">

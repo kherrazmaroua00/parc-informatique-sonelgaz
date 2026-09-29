@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const utilisateurController = require('../controllers/utilisateurController');
-const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
+const { verifyToken, requireAdmin, requireRole } = require('../middleware/authMiddleware');
+const requireAppUser = requireRole('admin', 'consultation', 'chef_structure');
 
 router.use(verifyToken);
-router.get('/stats', utilisateurController.getStats);
-router.get('/', utilisateurController.getAll);
+router.get('/stats', requireAppUser, utilisateurController.getStats);
+router.get('/', requireAppUser, utilisateurController.getAll);
 router.post('/', requireAdmin, utilisateurController.create);
 router.post('/:id/invitation', requireAdmin, utilisateurController.sendInvitation);
 router.put('/:id', requireAdmin, utilisateurController.update);

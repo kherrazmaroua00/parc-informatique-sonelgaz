@@ -22,8 +22,8 @@ CREATE TABLE Utilisateur (
     mot_de_passe VARCHAR(255) NOT NULL,
     invitation_token_hash CHAR(64) NULL,
     invitation_expires_at DATETIME NULL,
-    role ENUM('admin', 'consultation', 'chef_structure') NOT NULL,
-    id_structure INT NOT NULL,
+    role ENUM('admin', 'consultation', 'chef_structure', 'operateur') NOT NULL,
+    id_structure INT NULL,
     FOREIGN KEY (id_structure) REFERENCES Structure(id_structure)
 );
 

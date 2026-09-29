@@ -34,9 +34,11 @@ export default function Sidebar() {
 
   const visibleItems = user?.role === 'admin'
     ? navItems.filter((item) => ['/dashboard', '/consommables', '/structures', '/utilisateurs', '/historique'].includes(item.href))
-    : navItems
-      .filter((item) => ['/dashboard', '/equipements', '/demandes'].includes(item.href))
-      .map((item) => item.href === '/demandes' ? { ...item, label: 'Mes demandes' } : item);
+    : user?.role === 'operateur'
+      ? navItems.filter((item) => item.href === '/demandes')
+      : navItems
+        .filter((item) => ['/dashboard', '/equipements', '/demandes'].includes(item.href))
+        .map((item) => item.href === '/demandes' ? { ...item, label: 'Mes demandes' } : item);
 
   function handleLogout() {
     localStorage.removeItem('token');
@@ -48,7 +50,7 @@ export default function Sidebar() {
     <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-56 shrink-0 flex-col border-r border-slate-200 bg-[#f3f7ff]">
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         <p className="mb-2 px-2 pt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-          {user?.role === 'admin' ? 'Administration' : 'Mon espace'}
+          {user?.role === 'admin' ? 'Administration' : user?.role === 'operateur' ? 'Traitement des demandes' : 'Mon espace'}
         </p>
         {visibleItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -95,7 +97,7 @@ export default function Sidebar() {
           Périmètre
         </p>
         <p className="mt-1 pl-5 text-[10px] leading-relaxed text-slate-600">
-          {user?.role === 'admin' ? 'Administration du parc informatique' : user?.nom_structure || 'Structure rattachée au compte'}
+          {user?.role === 'admin' ? 'Administration du parc informatique' : user?.role === 'operateur' ? 'Toutes les structures' : user?.nom_structure || 'Structure rattachée au compte'}
         </p>
       </div>
 

@@ -21,6 +21,7 @@ export default function DemandesPage() {
   const [error, setError] = useState('');
   const user = useStoredUser();
   const isAdmin = user?.role === 'admin';
+  const isOperateur = user?.role === 'operateur';
 
   useEffect(() => {
     if (isAdmin) apiFetch('/structures').then(setStructures).catch(() => {});
@@ -112,11 +113,11 @@ export default function DemandesPage() {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="mb-1 text-xs uppercase tracking-wide text-gray-400">Parc informatique &gt; Demandes</p>
-          <h1 className="text-2xl font-bold text-gray-900">{isAdmin ? 'Demandes' : 'Mes demandes'}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{isAdmin || isOperateur ? 'Demandes' : 'Mes demandes'}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {isAdmin && <button onClick={exportDemandes} disabled={demandes.length === 0} className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"><Download size={16} strokeWidth={1.75} />Exporter le registre (Excel)</button>}
-          {!isAdmin && <Link href="/demandes/nouveau" className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"><Plus size={16} />Nouvelle demande</Link>}
+          {!isAdmin && !isOperateur && <Link href="/demandes/nouveau" className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"><Plus size={16} />Nouvelle demande</Link>}
         </div>
       </div>
 
@@ -196,7 +197,7 @@ export default function DemandesPage() {
         <DemandeCard
           key={demande.id_demande}
           demande={demande}
-          canManage={isAdmin}
+          canManage={isOperateur}
           onAccorder={handleAccorder}
           onRefuser={handleRefuser}
           onMarquerRemis={handleMarquerRemis}
